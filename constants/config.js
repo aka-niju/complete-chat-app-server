@@ -4,8 +4,8 @@ export const corsOptions = {
         "http://localhost:4173",
         process.env.CLIENT_URL, 
     ],
-    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
 };
 
 export const CHAT_TOKEN = "chat-token";

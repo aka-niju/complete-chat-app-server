@@ -22,10 +22,10 @@ export const errorMiddleware = (err, req, res, next) => {
         message: err.message
     };
 
-    // if(envMode === "DEVELOPMENT"){
-    //     response.error = err;
-    // };
+    if(envMode === "DEVELOPMENT"){
+        response.error = err;
+    };
 
     return res.status(err.statusCode).json(response);
-}
+};
 

@@ -3,17 +3,15 @@ import jwt from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 import { Chat } from "../models/chat.model.js";
 import { Message } from "../models/message.model.js";
-
-import { ALERT, NEW_MESSAGE, NEW_MESSAGE_ALERT, REFETCH_CHATS } from "../constants/events.js";
-import { emitEvent, uploadFilesToCloudinary, deletFilesFromCloudinary, cookieOptions } from "../utils/features.js";
-import { getOtherMemberExceptUser } from "../lib/helper.js";
+import { cookieOptions } from "../utils/features.js";
 import { ErrorHandler } from "../utils/errorhandler.js";
+import { adminSecretKey } from "../app.js";
 
 export const adminLogin = async (req, res, next) => {
     try {
         const { secretKey } = req.body;
 
-        const isSecretKeyMatched = secretKey === process.env.ADMIN_SECRET_KEY;
+        const isSecretKeyMatched = secretKey === adminSecretKey;
 
         if (!isSecretKeyMatched)
             return next(new ErrorHandler("Invalid Secret Key", 401));
@@ -76,7 +74,7 @@ export const allUsers = async (req, res, next) => {
         );
 
         return res.status(200).json({
-            status: "success",
+            success: true,
             users: updatedUsers,
         });
 

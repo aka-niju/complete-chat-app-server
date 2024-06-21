@@ -1,10 +1,11 @@
 import express from 'express';
 import { adminLogin, adminLogout, allChats, allMessages, allUsers, getAdminData, getDashboardStats } from '../controllers/admin.controllers.js';
 import { adminOnly } from '../middlewares/auth.js';
+import { adminLoginValidator, validationHandler } from '../lib/validator.js';
 
 const router = express.Router();
 
-router.post("/verify", adminLogin);
+router.post("/verify", adminLoginValidator(), validationHandler, adminLogin);
 router.get("/logout", adminLogout);
 
 // Authentication Middleware

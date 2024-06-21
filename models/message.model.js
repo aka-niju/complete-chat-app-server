@@ -1,6 +1,9 @@
 import mongoose, { Schema, model, Types } from "mongoose";
 const messsageSchema = new Schema({
-    content: String,
+    content: {
+        type: String,
+    },
+
     attachments: [
         {
             public_id: {

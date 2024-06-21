@@ -1,15 +1,17 @@
 import jwt from 'jsonwebtoken';
 import {ErrorHandler} from "../utils/errorhandler.js"
+import { CHAT_TOKEN } from '../constants/config.js';
+import {adminSecretKey} from '../app.js';
 
 export const isAuthenticated = async (req, res, next) => {
     try {
-        const token = req.cookies["chat-token"];
+        const token = req.cookies[CHAT_TOKEN];
 
         if (!token) return next(new ErrorHandler("Please login to access this route", 401));
 
         const decodedData = jwt.verify(token, process.env.JWT_SECRET);
 
-        req.userId = decodedData._id;
+        req.user = decodedData._id;
         next();
 
     } catch (error) {
@@ -25,7 +27,7 @@ export const adminOnly = async(req, res, next) => {
 
         const secretKey = jwt.verify(adminToken, process.env.JWT_SECRET);
 
-        const isSecretKeyMatched = secretKey === process.env.ADMIN_SECRET_KEY;
+        const isSecretKeyMatched = secretKey === adminSecretKey;
 
         if (!isSecretKeyMatched) return next(new ErrorHandler("Only admin can access this route", 401));
 
@@ -35,3 +37,4 @@ export const adminOnly = async(req, res, next) => {
     }
 };
 
+// socket authenticator

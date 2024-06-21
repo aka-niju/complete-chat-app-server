@@ -5,8 +5,8 @@ import { Request } from "../models/request.model.js";
 import { Message } from "../models/message.model.js";
 
 import { ErrorHandler } from '../utils/errorhandler.js';
-import { cookieOptions, emitEvent, generateTokenAndSendCookie } from "../utils/features.js"
-import { NEW_REQUEST } from '../constants/events.js';
+import { cookieOptions, emitEvent, generateTokenAndSendCookie, uploadFilesToCloudinary } from "../utils/features.js"
+import { NEW_REQUEST, REFETCH_CHATS } from '../constants/events.js';
 import { getOtherMemberExceptUser } from '../lib/helper.js';
 
 export const userSignup = async (req, res, next) => {
@@ -17,6 +17,9 @@ export const userSignup = async (req, res, next) => {
             public_id: 'avatar',
             url: "abcd",
         };
+
+        // const file = req.file;
+        // if(!file) return next(new ErrorHandler("Please Upload Avatar"));
 
         let user = await User.findOne({ username });
         if (user) return next(new ErrorHandler("User already exits", 400));
@@ -42,11 +45,11 @@ export const userLogin = async (req, res, next) => {
 
         const user = await User.findOne({ username }).select("+password");
 
-        if (!user) return next(new ErrorHandler("Invalid username or password"));
+        if (!user) return next(new ErrorHandler("Invalid username or password", 404));
 
         const isPasswordMatched = await bcrypt.compare(password, user.password);
 
-        if (!isPasswordMatched) return next(new ErrorHandler("Invalid username or password"));
+        if (!isPasswordMatched) return next(new ErrorHandler("Invalid username or password", 404));
 
         generateTokenAndSendCookie(res, user, `Welcome back ${user.name}`, 200);
 
@@ -68,7 +71,7 @@ export const userLogout = async (req, res, next) => {
 
 export const getMyProfile = async (req, res, next) => {
     try {
-        const user = await User.findById(req.userId);
+        const user = await User.findById(req.user);
 
         if (!user) return next(new ErrorHandler("User not found", 404));
         res.status(200).json({
@@ -76,13 +79,13 @@ export const getMyProfile = async (req, res, next) => {
             user
         });
     } catch (error) {
-
+        next(error);
     }
 };
 
 export const searchUser = async (req, res, next) => {
     try {
-        const { } = req.query;
+        const { name = "" } = req.query;
 
         const myChats = await Chat.find({
             groupChat: false, members: req.user,
@@ -95,8 +98,8 @@ export const searchUser = async (req, res, next) => {
             name: { $regex: name, $options: "i" },
         });
 
-        const updatedUsers = allUsersExceptMeAndFriends.map(({ _id, name, username, avatar }) => ({
-            _id, name, username, avatar: avatar.url,
+        const updatedUsers = allUsersExceptMeAndFriends.map(({ _id, name, avatar }) => ({
+            _id, name, avatar: avatar.url,
         }));
 
         return res.status(200).json({
@@ -111,12 +114,12 @@ export const searchUser = async (req, res, next) => {
 
 export const sendFriendRequest = async (req, res, next) => {
     try {
-        const { userId } = req.body;
+        const { userId:userIdToSendRequest } = req.body;
 
         const request = await Request.findOne({
             $or: [
-                { sender: req.user, receiver: userId },
-                { sender: userId, receiver: req.user },
+                { sender: req.user, receiver: userIdToSendRequest },
+                { sender: userIdToSendRequest, receiver: req.user },
             ],
         });
 
@@ -124,10 +127,10 @@ export const sendFriendRequest = async (req, res, next) => {
 
         await Request.create({
             sender: req.user,
-            receiver: userId,
+            receiver: userIdToSendRequest,
         });
 
-        emitEvent(req, NEW_REQUEST, [userId]);
+        emitEvent(req, NEW_REQUEST, [userIdToSendRequest]);
 
         return res.status(200).json({
             success: true,
@@ -147,7 +150,7 @@ export const acceptFriendRequest = async (req, res, next) => {
 
         if (!request) return next(new ErrorHandler("Request not found", 404));
 
-        if (request.receiver._id.toString() !== req.userId.toString())
+        if (request.receiver._id.toString() !== req.user.toString())
             return next(new ErrorHandler("You are not authorized to accept this request", 401));
 
         if (!accept) {
@@ -211,7 +214,7 @@ export const getMyFriends = async (req, res, next) => {
         const chatId = req.query.chatId;
 
         const chats = await Chat.find({
-            members: req.userId,
+            members: req.user,
             groupChat: false,
         }).populate("members", "name avatar");
 
