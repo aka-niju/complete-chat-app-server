@@ -26,8 +26,9 @@ router.post("/message", attachmentsMulter, sendAttachmentsValidator(), validatio
 router.get("/message/:id", chatIdValidator(), validationHandler, getMessages);
 
 // Get Chat Details, rename, delelte
-router.route("/:id").put(renameGroupValidator(), validationHandler, renameGroup)
-    .get(chatIdValidator(), validationHandler,  getChatDetails)
+router.route("/:id")
+    .put(renameGroupValidator(), validationHandler, renameGroup)
+    .get(chatIdValidator(), validationHandler, getChatDetails)
     .delete(chatIdValidator(), validationHandler, deleteChat);
 
 

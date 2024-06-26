@@ -13,7 +13,7 @@ const userSchema = new Schema({
     },
     bio: {
         type: String,
-        default: "",
+        default: "Hey there !",
         required: false,
     },
     password: {

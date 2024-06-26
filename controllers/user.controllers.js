@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import { User } from '../models/user.model.js';
 import { Chat } from "../models/chat.model.js";
 import { Request } from "../models/request.model.js";
-import { Message } from "../models/message.model.js";
+
 
 import { ErrorHandler } from '../utils/errorhandler.js';
 import { cookieOptions, emitEvent, generateTokenAndSendCookie, uploadFilesToCloudinary } from "../utils/features.js"
@@ -20,6 +20,13 @@ export const userSignup = async (req, res, next) => {
 
         // const file = req.file;
         // if(!file) return next(new ErrorHandler("Please Upload Avatar"));
+
+        // const result = await uploadFilesToCloudinary([file]);
+
+        // const avatar = {
+        //     public_id: result[0].public_id,
+        //     url: result[0].url,
+        // };
 
         let user = await User.findOne({ username });
         if (user) return next(new ErrorHandler("User already exits", 400));
@@ -76,7 +83,7 @@ export const getMyProfile = async (req, res, next) => {
         if (!user) return next(new ErrorHandler("User not found", 404));
         res.status(200).json({
             success: true,
-            user
+            user,
         });
     } catch (error) {
         next(error);
@@ -114,12 +121,12 @@ export const searchUser = async (req, res, next) => {
 
 export const sendFriendRequest = async (req, res, next) => {
     try {
-        const { userId:userIdToSendRequest } = req.body;
+        const { userId } = req.body;
 
         const request = await Request.findOne({
             $or: [
-                { sender: req.user, receiver: userIdToSendRequest },
-                { sender: userIdToSendRequest, receiver: req.user },
+                { sender: req.user, receiver: userId },
+                { sender: userId, receiver: req.user },
             ],
         });
 
@@ -127,10 +134,10 @@ export const sendFriendRequest = async (req, res, next) => {
 
         await Request.create({
             sender: req.user,
-            receiver: userIdToSendRequest,
+            receiver: userId,
         });
 
-        emitEvent(req, NEW_REQUEST, [userIdToSendRequest]);
+        emitEvent(req, NEW_REQUEST, [userId]);
 
         return res.status(200).json({
             success: true,
