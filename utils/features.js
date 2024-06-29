@@ -25,12 +25,10 @@ export const emitEvent = (req, event, users, data) => {
     const io = req.app.get("io");
     const usersSocket = getSockets(users);
     io.to(usersSocket).emit(event, data);
-    console.log(event, data);
 };
 
 export const uploadFilesToCloudinary = async (files = []) => {
 
-    console.log("Files uploaded to cloudinary")
     const uploadPromises = files.map((file) => {
         return new Promise((resolve, reject) => {
             cloudinary.uploader.upload(

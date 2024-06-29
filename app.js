@@ -15,8 +15,6 @@ import { Message } from './models/message.model.js';
 import { getSockets } from './lib/helper.js';
 
 import {createUsers} from './seeders/user.seeder.js';
-import {createSingleChats, createGroupChats} from './seeders/chat.seeder.js';
-import {createMessages, createMessagesInChat} from './seeders/message.seeder.js';
 
 import userRoute from './routes/user.routes.js';
 import chatRoute from './routes/chat.routes.js';
@@ -37,10 +35,6 @@ const onlineUsers = new Set();
 
 // Connecting database
 connectToDB(mongoURI);
-// createUsers(10);
-// createSingleChats(10);
-// createGroupChats(10);
-// createMessagesInChat("6661656ffb4b29eb05765e06", 20);
 
 // Cloudinary
 cloudinary.config({
@@ -55,6 +49,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: corsOptions,
 });
+
 
 app.set ("io", io);
 
@@ -73,7 +68,6 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-// Socket io functionality will come here
 io.use((socket, next) => {
   cookieParser()(
     socket.request,

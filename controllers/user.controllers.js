@@ -13,20 +13,22 @@ export const userSignup = async (req, res, next) => {
     try {
         const { name, username, password, bio } = req.body;
 
-        const avatar = {
-            public_id: 'avatar',
-            url: "abcd",
-        };
+        const file = req.file;
+        let avatar;
 
-        // const file = req.file;
-        // if(!file) return next(new ErrorHandler("Please Upload Avatar"));
-
-        // const result = await uploadFilesToCloudinary([file]);
-
-        // const avatar = {
-        //     public_id: result[0].public_id,
-        //     url: result[0].url,
-        // };
+        if (!file) {
+            avatar = {
+                public_id: `${username}`,
+                url: `https://ui-avatars.com/api/?&background=random&name=${name}`,
+            };
+        }
+        else {
+            const result = await uploadFilesToCloudinary([file]);
+            avatar = {
+                public_id: result[0].public_id,
+                url: result[0].url,
+            };
+        }
 
         let user = await User.findOne({ username });
         if (user) return next(new ErrorHandler("User already exits", 400));
@@ -58,7 +60,7 @@ export const userLogin = async (req, res, next) => {
 
         if (!isPasswordMatched) return next(new ErrorHandler("Invalid username or password", 404));
 
-        generateTokenAndSendCookie(res, user, `Welcome back ${user.name}`, 200);
+        generateTokenAndSendCookie(res, user, `Welcome ${user.name}`, 200);
 
     } catch (error) {
         next(error);
@@ -101,7 +103,7 @@ export const searchUser = async (req, res, next) => {
         const allUsersFromMyChats = myChats.flatMap((chat) => chat.members);
 
         const allUsersExceptMeAndFriends = await User.find({
-            _id: { $nin: allUsersFromMyChats },
+            _id: { $nin: [...allUsersFromMyChats, req.user] },
             name: { $regex: name, $options: "i" },
         });
 
@@ -176,7 +178,7 @@ export const acceptFriendRequest = async (req, res, next) => {
                 members,
                 name: `${request.sender.name}-${request.receiver.name}`,
             }),
-            request.deletOne(),
+            request.deleteOne(),
         ]);
 
         emitEvent(req, REFETCH_CHATS, members);
