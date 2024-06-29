@@ -19,13 +19,10 @@ router.put("/removemember", removeMemberValidator(), validationHandler, removeMe
 
 router.delete("/leave/:id", chatIdValidator(), validationHandler, leaveGroup);
 
-// Send attachments
 router.post("/message", attachmentsMulter, sendAttachmentsValidator(), validationHandler, sendAttachments);
 
-// Get messages
 router.get("/message/:id", chatIdValidator(), validationHandler, getMessages);
 
-// Get Chat Details, rename, delelte
 router.route("/:id")
     .put(renameGroupValidator(), validationHandler, renameGroup)
     .get(chatIdValidator(), validationHandler, getChatDetails)

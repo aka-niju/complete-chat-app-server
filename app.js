@@ -14,8 +14,6 @@ import {corsOptions} from './constants/config.js';
 import { Message } from './models/message.model.js';
 import { getSockets } from './lib/helper.js';
 
-import {createUsers} from './seeders/user.seeder.js';
-
 import userRoute from './routes/user.routes.js';
 import chatRoute from './routes/chat.routes.js';
 import adminRoute from './routes/admin.routes.js';
@@ -33,17 +31,14 @@ const adminSecretKey = process.env.ADMIN_SECRET_KEY || "Admin@123";
 const userSocketIDs = new Map();
 const onlineUsers = new Set();
 
-// Connecting database
 connectToDB(mongoURI);
 
-// Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Applications and servers
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -53,17 +48,14 @@ const io = new Server(server, {
 
 app.set ("io", io);
 
-// Middlewares
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors(corsOptions));
 
-// Dynamic routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/chat", chatRoute);
 app.use("/api/v1/admin", adminRoute);
 
-// Static route
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });

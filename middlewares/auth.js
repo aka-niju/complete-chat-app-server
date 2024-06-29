@@ -38,7 +38,6 @@ export const adminOnly = async (req, res, next) => {
     }
 };
 
-// socket authenticator
 export const socketAuthenticator = async (err, socket, next) => {
     try {
         if (err) return next(err);

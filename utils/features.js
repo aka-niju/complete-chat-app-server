@@ -60,7 +60,6 @@ export const uploadFilesToCloudinary = async (files = []) => {
 
 
 export const deletFilesFromCloudinary = async (public_ids) => {
-    console.log("files deleted from cloudinary")
     await cloudinary.v2.api.delete_resources(public_ids, function (error, result) {
         if (error) {
             console.log(error);
