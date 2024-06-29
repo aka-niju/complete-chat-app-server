@@ -282,7 +282,6 @@ export const sendAttachments = async (req, res, next) => {
         if (files.length < 1)
             return next(new ErrorHandler("Please provide attachments", 400));
 
-        // Upload files to cloudinary
         const attachments = await uploadFilesToCloudinary(files);
 
         const messageForDB = {
@@ -403,8 +402,6 @@ export const deleteChat = async (req, res, next) => {
         if (!chat.groupChat && !chat.members.includes(req.user.toString())) {
             return next(new ErrorHandler("You are not allowed to delete this chat", 403));
         }
-
-        // Here delete all messages as well as attachments or files from cloudinary;
 
         const messagesWithAttachments = await Message.find({
             chat: chatId,
